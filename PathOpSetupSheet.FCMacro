@@ -45,7 +45,7 @@ import PathScripts.PathUtil as PathUtil
 import PathScripts.PathUtils as PathUtils
 import os
 from string import Template
-import ptvsd
+#  import ptvsd
 from PySide2 import QtGui
 from PySide2.QtGui import QPixmap
 import WebGui
@@ -66,9 +66,9 @@ __Communication__ = ''
 __Files__ = "PathOpSetupSheet.FCMacro,PathOpSetupSheet.svg,PathOpSetupSheet.ui"
 
 # Waiting for debugger
-print("Waiting for debugger attach")
-ptvsd.enable_attach(address=('127.0.0.1', 5678))
-ptvsd.wait_for_attach()
+#  print("Waiting for debugger attach")
+#  ptvsd.enable_attach(address=('127.0.0.1', 5678))
+#  ptvsd.wait_for_attach()
 # End debug
 
 # Constant definitions
