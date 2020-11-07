@@ -1,0 +1,41 @@
+====================
+Setupsheet
+====================
+
+  Program:            $ngclabel
+  Job description:    $description
+
+  Part Name:          $partname
+  CAD File:           $cadfile
+  Path:               $cadfilepath
+  CNC Program:        $ngcfile
+  Path:               $ngcfilepath
+  Processed:          $date
+  Processor:          $postprocessor
+  Machine:            $machine
+  WCS:                $workoffset
+  Low Z:              $zmin
+  Material:           $material
+  Notes:
+
+  Stock
+  =====
+    DX:               $stockx
+    DY:     	      $stocky
+    DZ:               $stockz
+
+  Total
+  =====
+    # of operations:  $num_ops
+    # of tools:       $num_tools
+    ETA:   	      $runtime
+    Tools:
+      $toolrows
+
+    XMin: $xmin     XMax: $xmax
+    YMin: $ymin     YMax: $ymax
+    ZMin: $zmin     ZMax: $zmax
+
+  Operations
+  ==========
+    $oprows

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Setup Sheet</title>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 10px;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        img {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Setup Sheet</h1>
+    <h3>Program: $ngclabel</h3>
+    <h3>Job description: $description</h3>
+    <table id="header">
+        <tr>
+            <th>Part Name:</th>
+            <td>$partname</td>
+        </tr>
+        <tr>
+            <th rowspan="2">CAD File:</th>
+            <td>$cadfile</td>
+        </tr>
+        <tr>
+            <td>$cadfilepath</td>
+        </tr>
+        <tr>
+            <th rowspan="2">CNC Program:</th>
+            <td>$ngcfile</td>
+        </tr>
+        <tr>
+            <td>$ngcfilepath</td>
+        </tr>
+        <tr>
+            <th>Processed:</th>
+            <td>$date</td>
+        </tr>
+        <tr>
+            <th>Processor:</th>
+            <td>$postprocessor</td>
+        </tr>
+        <tr>
+            <th>Machine:</th>
+            <td>$machine</td>
+        </tr>
+        <tr>
+            <th>WCS:</th>
+            <td>$workoffset</td>
+        </tr>
+        <tr>
+            <th>Low Z:</th>
+            <td>$zmin</td>
+        </tr>
+        <tr>
+            <th>Material:</th>
+            <td>$material</td>
+        </tr>
+        <tr>
+            <th>Notes:</th>
+            <td>$notes</td>
+        </tr>
+    </table>
+    <h2>Origin</h2>
+    <img src="$imgsrc" alt="Origin" style="width:320px; height:200px; border:1px solid black;">
+    <dl>
+        <dt style="font-weight: bold;">Stock size:</dt>
+        <dd>DX: $stockx</dd>
+        <dd>DY: $stocky</dd>
+        <dd>DZ: $stockz</dd>
+    </dl>
+    <h2>Total</h2>
+    <table id="total">
+        <tr>
+            <th>Number of operations:</th>
+            <td>$num_ops</td>
+        </tr>
+        <tr>
+            <th>Number of tools:</th>
+            <td>$num_tools</td>
+        </tr>
+        $toolrows
+        <tr>
+            <th>Estimated cycle time:</th>
+            <td>$runtime</td>
+        </tr>
+        <tr>
+            <th>XMin : XMax:</th>
+            <td>$xmin : $xmax</td>
+        </tr>
+        <tr>
+            <th>YMin : YMax:</th>
+            <td>$ymin : $ymax</td>
+        </tr>
+        <tr>
+            <th>ZMin : ZMax:</th>
+            <td>$zmin : $zmax</td>
+        </tr>
+    </table>
+    <h2>Operations</h2>
+    <table id="operations">
+        <tr>
+            <th>Op.</th>
+            <th>Tool</th>
+            <th>ETA</th>
+            <th>HorizFeed</th>
+            <th>VertFeed</th>
+            <th>Spindle n</th>
+            <th>Spindle dir</th>
+        </tr>
+        $oprows
+    </table>
+</body>
+
+</html>

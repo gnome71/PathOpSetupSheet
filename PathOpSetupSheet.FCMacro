@@ -1,0 +1,418 @@
+#pylint: disable=E0401,C0103,C0413
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+  # ***************************************************************************
+  # *                                                                         *
+  # *   Author: Alexander Kaspar, <alexander.kaspar@drei.at>                  *
+  # *                                                                         *
+  # *   This program is free software; you can redistribute it and/or modify  *
+  # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
+  # *   as published by the Free Software Foundation; either version 2 of     *
+  # *   the License, or (at your option) any later version.                   *
+  # *   for detail see the LICENCE text file.                                 *
+  # *                                                                         *
+  # *   This program is distributed in the hope that it will be useful,       *
+  # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+  # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+  # *   GNU Library General Public License for more details.                  *
+  # *                                                                         *
+  # *   You should have received a copy of the GNU Library General Public     *
+  # *   License along with this program; if not, write to the Free Software   *
+  # *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
+  # *   USA                                                                   *
+  # *                                                                         *
+  # ***************************************************************************
+"""
+"""
+Create an operator setupsheet for CNC jobs
+
+INSTALLATION
+Place this script in your macros folder.
+(default is $HOME/.FreeCAD/Macro on mac/linux,
+C:/Users/youruser/Application Data/FreeCAD/Macro on windows).
+
+TODO:   Check stock material
+        Rename output file
+
+"""
+
+import FreeCAD
+import FreeCADGui
+import PathScripts.PathUtil as PathUtil
+import PathScripts.PathUtils as PathUtils
+import os
+from string import Template
+import ptvsd
+from PySide2 import QtGui
+from PySide2.QtGui import QPixmap
+import WebGui
+
+__Name__ = "PathOpSetupSheet"
+__Comment__ = "Create an operator setupsheet for CNC jobs"
+__Author__ = "alexK"
+__Version__ = "0.1"
+__Date__ = "2020-10-18"
+__License__ = "LGPL-2.0-or-later"
+__Web__ = ''
+__Wiki__ = ''
+__Icon__ = 'PathOpSetupSheet.svg'
+__Help__ = ''
+__Status__ = ''
+__Requires__ = ''
+__Communication__ = ''
+__Files__ = "PathOpSetupSheet.FCMacro,PathOpSetupSheet.svg,PathOpSetupSheet.ui"
+
+# Waiting for debugger
+print("Waiting for debugger attach")
+ptvsd.enable_attach(address=('127.0.0.1', 5678))
+ptvsd.wait_for_attach()
+# End debug
+
+# Constant definitions
+USERCANCELLED = "Cancelled"
+USEROK = "OK"
+
+# Get the script directory and name
+MY_PATH = os.path.abspath(__file__)
+SCRIPTPATH, SCRIPTNAME = os.path.split(MY_PATH)
+SCRIPT_UI = SCRIPTPATH + "/PathOpSetupSheet.ui"
+
+
+class OpSetupSheet:
+    """Operator SetupSheet Class"""
+    def __init__(self, myjob):
+        self._form = FreeCADGui.PySideUic.loadUi(SCRIPT_UI)
+        self._job = myjob
+        self._file_objects = {
+            # Cadfile path
+            "cadpn": os.path.dirname(FreeCAD.ActiveDocument.FileName),
+            # Cadfile name
+            "cadfn": os.path.basename(FreeCAD.ActiveDocument.FileName),
+            # Gcode file path
+            "ngcpn": os.path.dirname(myjob.LastPostProcessOutput),
+            # Gcode file name
+            "ngcfn": os.path.basename(myjob.LastPostProcessOutput),
+            "ssfn": "",  # Screenshot file name
+            "outfn": "",  # Output file
+            "outext": ".html"  # Output fle extension and type
+        }
+
+        self._data = {
+            "joblabel": myjob.Label,
+            "partname": FreeCAD.ActiveDocument.Label,
+            "cadfile": self._file_objects["cadfn"],
+            "cadfilepath": self._file_objects["cadpn"] + '/',
+            "workorder": "",
+            "machine": "",
+            "lowZ": "",
+            "material": myjob.Stock.Material.Label,
+            "num_ops": 0,
+            "num_tools": "",
+            "notes": "",
+            "imgsrc": "",
+            "stockx": format_num(myjob.Stock.Shape.BoundBox.XLength),
+            "stocky": format_num(myjob.Stock.Shape.BoundBox.YLength),
+            "stockz": format_num(myjob.Stock.Shape.BoundBox.ZLength),
+            "workoffset": "",
+            "origin": "",
+            "programname": "",
+            "ngcfile": self._file_objects["ngcfn"],
+            "ngcfilepath": self._file_objects["ngcpn"] + "/",
+            "ngclabel": myjob.Label,
+            "date": myjob.LastPostProcessDate,
+            "xmax": format_num(myjob.Path.BoundBox.XMax),
+            "xmin": format_num(myjob.Path.BoundBox.XMin),
+            "ymax": format_num(myjob.Path.BoundBox.YMax),
+            "ymin": format_num(myjob.Path.BoundBox.YMin),
+            "zmax": format_num(myjob.Path.BoundBox.ZMax),
+            "zmin": format_num(myjob.Path.BoundBox.ZMin),
+            "postprocessor": myjob.PostProcessor,
+            "description": myjob.Description,
+            "runtime": myjob.CycleTime,
+            "toolrows": "",
+            "oprows": ""
+        }
+        self._tooldata = []
+
+    def _populate_tooldata(self, out_format='.html'):
+        """Get data for tooldata part"""
+
+        for obj in self._job.Operations.Group:
+            tool_controller = PathUtil.toolControllerForOp(obj)
+
+            # Do we have the tool already?
+            if tool_controller and not list(
+                    filter(
+                        lambda t: t['number'] == "T" + str(
+                            tool_controller.ToolNumber), self._tooldata)):
+                self._tooldata.append({
+                    "number":
+                    "T" + str(tool_controller.ToolNumber),
+                    "diameter":
+                    str(tool_controller.Tool.Diameter),
+                    "name":
+                    tool_controller.Tool.Name
+                })
+
+        self._data["num_tools"] = str(len(self._tooldata))
+
+        toolstr = ""
+        for tool in self._tooldata:
+            if out_format == ".html":
+                toolstr += "<th>" + tool["number"] + ":</th>\n"
+                toolstr += "<td>" + tool["name"] + "</td></tr>\n"
+            elif out_format == ".csv":
+                toolstr += tool["number"] + ","
+                toolstr += tool["name"] + ",\n"
+            else:
+                toolstr += tool["number"] + "\t"
+                toolstr += tool["name"] + "\n"
+
+        self._data["toolrows"] = toolstr
+
+    def _populate_workholding(self):
+        """Get data for workholding part"""
+
+        wcsstr = ""
+        for wcs in self._job.Fixtures:
+            wcsstr += wcs + ","
+
+        self._data["workoffset"] = wcsstr
+
+    def _populate_operations(self, out_format='.html'):
+        """Get data for operations part"""
+
+        operations = [{}]
+        lbl = ""
+
+        for obj in self._job.Operations.Group:
+            active = PathUtil.opProperty(obj, 'Active')
+            tc = PathUtil.toolControllerForOp(obj)
+            lbl = PathUtil.opProperty(obj, 'Label')
+
+            # iterate through dressups to get base label
+            sub = obj
+            while hasattr(sub, 'Base') and not isinstance(sub.Base, list):
+                sub = sub.Base
+                lbl = PathUtil.opProperty(sub, 'Label')
+
+            ct = PathUtil.opProperty(obj, 'CycleTime')
+
+            if active:
+                self._data['num_ops'] += 1
+                operations.append({
+                    "label":
+                    lbl,
+                    "tool":
+                    tc.Label,
+                    "cycletime":
+                    ct,
+                    "horizfeed":
+                    tc.HorizFeed.UserString,
+                    "vertfeed":
+                    tc.VertFeed.UserString,
+                    "spindle_n":
+                    "{:n}".format(tc.SpindleSpeed),
+                    "spindle_dir":
+                    tc.SpindleDir
+                })
+
+        opstr = ""
+        # Populate the list of operations
+        if out_format == ".txt":
+            for op in operations:
+                for key in op:
+                    opstr += '{:15} '.format(op[key])
+                opstr += '\n'
+        elif out_format == ".csv":
+            for op in operations:
+                opstr += ','
+                for key in op:
+                    opstr += op[key] + ','
+                opstr += '\n'
+        else:
+            for op in operations:
+                for key in op:
+                    opstr += '<td>' + op[key] + '</td>\n'
+                opstr += '</tr>'
+
+        opstr += '\n'
+
+        self._data["oprows"] = opstr
+
+    def _takeScreenShot(self):
+        """ Screenshot of active view """
+
+        self._file_objects["ssfn"] = self._file_objects["ngcpn"] \
+            + "/" + "SetupSheet_" \
+            + self._data['ngclabel'] + '.png'
+
+        FreeCADGui.activeDocument().activeView().saveImage(
+            self._file_objects["ssfn"], 320, 200, 'White')
+
+        self._data["imgsrc"] = self._file_objects["ssfn"]
+
+    def _onPushButtonOk(self):
+        """ Handle button OK """
+
+        self._form.result = USEROK
+        self._form.close()
+
+    def _onPushButtonReject(self):
+        """ Handle button Cancel """
+
+        self._form.result = USERCANCELLED
+        self._form.close()
+
+    def _onPushButtonOpen(self):
+        """ Handle button Open """
+
+        fp = QtGui.QFileDialog.getExistingDirectory(
+            caption='Open Output Folder', dir=self._data["filepath"])
+
+        if fp:
+            self._file_objects["outfn"] = fp
+            self._form.leOutfile.setText(self._file_objects["outfn"] + '/')
+
+    def _onExtChanged(self):
+        """Handle Extension CheckBox changes"""
+
+        self._file_objects["outext"] = self._form.cbOutputFormat.currentText()
+        self._form.lblShowOut.setText("/" + "SetupSheet_" +
+                                      self._data['ngclabel'] +
+                                      self._file_objects["outext"])
+        if self._file_objects["outext"] == ".html":
+            self._form.cbScreenShot.setEnabled(True)
+            self._form.lblOriginHint.setEnabled(True)
+            self._form.lblShowScreenShot.setEnabled(True)
+        else:
+            self._form.cbScreenShot.setEnabled(False)
+            self._form.lblOriginHint.setEnabled(False)
+            self._form.lblShowScreenShot.setEnabled(False)
+
+    def show_ui(self):
+        """Handle UI"""
+
+        if self._data['date'] is None:
+            QtGui.QMessageBox.information(
+                None, "", "Houston, we have a problem:\nNot postprocessed? 2")
+            return False
+
+        self._populate_tooldata()
+        self._populate_workholding()
+        self._populate_operations()
+
+        self._form.pbOk.setEnabled(True)
+        self._takeScreenShot()
+
+        self._file_objects["outfn"] = self._file_objects["ngcpn"]
+
+        self._form.pbOk.clicked.connect(self._onPushButtonOk)
+        self._form.pbReject.clicked.connect(self._onPushButtonReject)
+        self._form.pbOutfileOpen.clicked.connect(self._onPushButtonOpen)
+        self._form.cbOutputFormat.currentIndexChanged.connect(
+            self._onExtChanged)
+
+        self._form.leOutfile.setText(self._file_objects["outfn"] + '/')
+        self._form.lblShowOut.setText("/" + "SetupSheet_" +
+                                      self._data['ngclabel'] +
+                                      self._file_objects["outext"])
+        self._form.lblShowJob.setText(self._data['ngclabel'])
+        self._form.lblShowComment.setText(self._data['description'])
+        self._form.lblShowZmin.setText(str(self._data['zmin']))
+        self._form.lblShowPostTime.setText(self._data['date'])
+        self._form.lblShowPostProcessor.setText(self._data['postprocessor'])
+        self._form.lblShowOps.setText(str(self._data['num_ops']))
+        self._form.lblShowTools.setText(self._data['num_tools'])
+        self._form.lblShowCycleTime.setText(self._data["runtime"])
+        self._form.lePartName.setText(self._data['partname'])
+        self._form.leMaterial.setText(self._data['material'])
+        self._form.lblShowScreenShot.setPixmap(
+            QPixmap(self._file_objects["ssfn"]))
+
+        self._form.exec_()
+
+        if self._form.result == USERCANCELLED:
+            return False
+
+        if self._form.result == USEROK:
+            self._file_objects[
+                "outext"] = self._form.cbOutputFormat.currentText()
+            self._file_objects["outfn"] += "/" + "SetupSheet_" + \
+                self._data['ngclabel'] + self._file_objects["outext"]
+            self._data['machine'] = self._form.leMachine.text()
+            self._data['material'] = self._form.leMaterial.text()
+            self._data['notes'] = self._form.pteNotes.toPlainText()
+            return True
+
+        return False
+
+
+    def _substitute_template(self, out_format):
+        """Load the template and substitute the values we have"""
+
+        self._populate_tooldata(out_format=out_format)
+        self._populate_workholding()
+        self._populate_operations(out_format=out_format)
+
+        with open(SCRIPTPATH + "/PathOpSetupSheetTemplate" +
+                  out_format) as template:
+            my_template = Template(template.read())
+
+        outstream = my_template.substitute(self._data)
+
+        with open(self._file_objects["outfn"], "w+") as out:
+            out.write(outstream)
+
+        return outstream
+
+    def show_browser(self):
+        """Show html in a FreeCAD Document"""
+
+        if self._file_objects["outext"] == ".html":
+            self._substitute_template(out_format=".html")
+        elif self._file_objects["outext"] == ".csv":
+            self._substitute_template(out_format=".csv")
+        elif self._file_objects["outext"] == ".txt":
+            self._substitute_template(out_format=".txt")
+        else:
+            return
+
+        WebGui.openBrowser(self._file_objects["outfn"])
+        return
+
+    def get_label(self):
+        """Label getter"""
+
+        return self._data["ngclabel"]
+
+
+def format_num(number):
+    """format_num"""
+    return "{:.3f}".format(number)
+
+
+def main():
+    """ Main function """
+
+    op_setupsheets = []
+
+    # Get path jobs and create OpSetupSheet instances
+    jobs = PathUtils.GetJobs()
+    for job in jobs:
+        op_setupsheets.append(OpSetupSheet(job))
+
+    print('%d setup(s):' % len(op_setupsheets))
+    for setup in op_setupsheets:
+        print('Label: ' + setup.get_label())
+
+        # Start processing
+        if setup.show_ui():
+            setup.show_browser()
+
+
+if __name__ == '__main__':
+    main()

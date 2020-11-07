@@ -1,0 +1,29 @@
+Setup Sheet
+,Program,$ngclabel
+,Job Description,$description
+,Part Name,$partname
+,CAD File,$cadfilepath,$cadfile
+,CNC Program,$ngcfilepath,$ngcfile
+,Processed,$date
+,Postprocessor,$postprocessor
+,Machine,$machine
+,WCS,$workoffset
+,Low Z,$zmin
+,Material,$material
+,Notes,$notes
+Stock:,DX,DY,DZ
+,$stockx,$stocky,$stockz
+Total:
+,Number of operations,$num_ops
+,Number of tools,$num_tools
+,$toolrows
+,Estimated cycle time,$runtime
+,X:
+,,XMin,$xmin,XMax,$xmax
+,Y:
+,,YMin,$ymin,YMax,$ymax
+,Z:
+,,ZMin,$zmin,ZMax,$zmax
+Operations:
+,Op.,Tool,ETA,HorizFeed,VertFeed,Spindle n,Spindle dir
+$oprows
