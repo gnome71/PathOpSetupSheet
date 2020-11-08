@@ -35,7 +35,8 @@ C:/Users/youruser/Application Data/FreeCAD/Macro on windows).
 
 TODO:   Check stock material
         Rename output file
-
+        Check if default tool
+        Check if operations
 """
 
 import FreeCAD
@@ -44,9 +45,9 @@ import PathScripts.PathUtil as PathUtil
 import PathScripts.PathUtils as PathUtils
 import os
 from string import Template
-#  import ptvsd
-from PySide2 import QtGui
-from PySide2.QtGui import QPixmap
+import ptvsd
+from PySide import QtGui
+from PySide.QtGui import QPixmap
 import WebGui
 
 __Name__ = "PathOpSetupSheet"
@@ -65,9 +66,9 @@ __Communication__ = ''
 __Files__ = "PathOpSetupSheet.FCMacro,PathOpSetupSheet.svg,PathOpSetupSheet.ui"
 
 # Waiting for debugger
-#  print("Waiting for debugger attach")
-#  ptvsd.enable_attach(address=('127.0.0.1', 5678))
-#  ptvsd.wait_for_attach()
+print("Waiting for debugger attach")
+ptvsd.enable_attach(address=('127.0.0.1', 5678))
+ptvsd.wait_for_attach()
 # End debug
 
 # Constant definitions
@@ -107,7 +108,7 @@ class OpSetupSheet:
             "workorder": "",
             "machine": "",
             "lowZ": "",
-            "material": myjob.Stock.Material.Label,
+            "material": "",   #myjob.Stock.Material.Label,
             "num_ops": 0,
             "num_tools": "",
             "notes": "",
@@ -295,9 +296,14 @@ class OpSetupSheet:
     def show_ui(self):
         """Handle UI"""
 
-        if self._data['date'] is None:
+        # Handle missing objects
+        if self._data['date'] is '':
             QtGui.QMessageBox.information(
-                None, "", "Houston, we have a problem:\nNot postprocessed? 2")
+                None, "", "Houston, we have a problem:\nNot postprocessed?")
+            return False
+        if not self._job.Operations.Group:
+            QtGui.QMessageBox.information(
+                None, "", "Houston, we have a problem:\nNo operations available")
             return False
 
         self._populate_tooldata()
@@ -328,7 +334,8 @@ class OpSetupSheet:
         self._form.lblShowTools.setText(self._data['num_tools'])
         self._form.lblShowCycleTime.setText(self._data["runtime"])
         self._form.lePartName.setText(self._data['partname'])
-        self._form.leMaterial.setText(self._data['material'])
+        if self._data['material']:
+            self._form.leMaterial.setText(self._data['material'])
         self._form.lblShowScreenShot.setPixmap(
             QPixmap(self._file_objects["ssfn"]))
 
@@ -401,6 +408,11 @@ def main():
 
     # Get path jobs and create OpSetupSheet instances
     jobs = PathUtils.GetJobs()
+    if not jobs:
+        QtGui.QMessageBox.information(
+            None, "", "Houston, we have a problem:\nNo jobs available")
+        return
+
     for job in jobs:
         op_setupsheets.append(OpSetupSheet(job))
 
