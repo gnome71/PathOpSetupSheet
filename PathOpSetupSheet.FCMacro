@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#pylint: disable=E0401,C0103,C0413
+# pylint: disable=E0401,C0103,C0413
 
 """
   # ***************************************************************************
@@ -65,11 +65,11 @@ __Communication__ = ''
 __Files__ = "PathOpSetupSheet.FCMacro,PathOpSetupSheet.svg,PathOpSetupSheet.ui"
 
 # Waiting for debugger
-#import debugpy
-#print("Waiting for debugger attach")
-#debugpy.listen(('0.0.0.0', 5678))
-#debugpy.wait_for_client()
-#debugpy.breakpoint()
+# import debugpy
+# print("Waiting for debugger attach")
+# debugpy.listen(('0.0.0.0', 5678))
+# debugpy.wait_for_client()
+# debugpy.breakpoint()
 
 import ptvsd
 print("Waiting for debugger attach")
@@ -128,7 +128,8 @@ class OpSetupSheet:
             "ngcfile": self._file_objects["ngcfn"],
             "ngcfilepath": self._file_objects["ngcpn"] + "/",
             "ngclabel": myjob.Label,
-            "date": datetime.fromisoformat(myjob.LastPostProcessDate).strftime("%x, %X"),
+            "date": datetime.fromisoformat(myjob.LastPostProcessDate) \
+                    .strftime("%x, %X"),
             "xmax": format_num(myjob.Path.BoundBox.XMax),
             "xmin": format_num(myjob.Path.BoundBox.XMin),
             "ymax": format_num(myjob.Path.BoundBox.YMax),
@@ -309,7 +310,9 @@ class OpSetupSheet:
             return False
         if not self._job.Operations.Group:
             QtGui.QMessageBox.information(
-                None, "", "Houston, we have a problem:\nNo operations available")
+                None,
+                "",
+                "Houston, we have a problem:\nNo operations available")
             return False
 
         self._populate_tooldata()
