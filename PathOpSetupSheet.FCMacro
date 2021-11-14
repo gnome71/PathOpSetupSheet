@@ -67,11 +67,12 @@ __Files__ = "PathOpSetupSheet.FCMacro,PathOpSetupSheet.svg,PathOpSetupSheet.ui"
 # Waiting for debugger
 # import debugpy
 # print("Waiting for debugger attach")
-# debugpy.listen(('0.0.0.0', 5678))
+# debugpy.listen(5678)
 # debugpy.wait_for_client()
 # debugpy.breakpoint()
 
 import ptvsd
+
 print("Waiting for debugger attach")
 ptvsd.enable_attach(address=('localhost', 5678))
 ptvsd.break_into_debugger()
@@ -89,6 +90,7 @@ SCRIPT_UI = SCRIPTPATH + "/PathOpSetupSheet.ui"
 
 class OpSetupSheet:
     """Operator SetupSheet Class"""
+
     def __init__(self, myjob):
         self._form = FreeCADGui.PySideUic.loadUi(SCRIPT_UI)
         self._job = myjob
@@ -114,7 +116,7 @@ class OpSetupSheet:
             "workorder": "",
             "machine": "",
             "lowZ": "",
-            "material": "",   # myjob.Stock.Material.Label,
+            "material": "",  # myjob.Stock.Material.Label,
             "num_ops": 0,
             "num_tools": "",
             "notes": "",
@@ -129,7 +131,7 @@ class OpSetupSheet:
             "ngcfilepath": self._file_objects["ngcpn"] + "/",
             "ngclabel": myjob.Label,
             "date": datetime.fromisoformat(myjob.LastPostProcessDate) \
-                    .strftime("%x, %X"),
+                                           .strftime("%x, %X"),
             "xmax": format_num(myjob.Path.BoundBox.XMax),
             "xmin": format_num(myjob.Path.BoundBox.XMin),
             "ymax": format_num(myjob.Path.BoundBox.YMax),
@@ -157,11 +159,11 @@ class OpSetupSheet:
                             tool_controller.ToolNumber), self._tooldata)):
                 self._tooldata.append({
                     "number":
-                    "T" + str(tool_controller.ToolNumber),
+                        "T" + str(tool_controller.ToolNumber),
                     "diameter":
-                    str(tool_controller.Tool.Diameter),
+                        str(tool_controller.Tool.Diameter),
                     "name":
-                    tool_controller.Tool.Name
+                        tool_controller.Tool.Label
                 })
 
         self._data["num_tools"] = str(len(self._tooldata))
@@ -212,19 +214,19 @@ class OpSetupSheet:
                 self._data['num_ops'] += 1
                 operations.append({
                     "label":
-                    lbl,
+                        lbl,
                     "tool":
-                    tc.Label,
+                        tc.Label,
                     "cycletime":
-                    ct,
+                        ct,
                     "horizfeed":
-                    tc.HorizFeed.UserString,
+                        tc.HorizFeed.UserString,
                     "vertfeed":
-                    tc.VertFeed.UserString,
+                        tc.VertFeed.UserString,
                     "spindle_n":
-                    "{:n}".format(tc.SpindleSpeed),
+                        "{:n}".format(tc.SpindleSpeed),
                     "spindle_dir":
-                    tc.SpindleDir
+                        tc.SpindleDir
                 })
 
         opstr = ""
@@ -254,8 +256,8 @@ class OpSetupSheet:
         """ Screenshot of active view """
 
         self._file_objects["ssfn"] = self._file_objects["ngcpn"] \
-            + "/" + "SetupSheet_" \
-            + self._data['ngclabel'] + '.png'
+                                     + "/" + "SetupSheet_" \
+                                     + self._data['ngclabel'] + '.png'
 
         FreeCADGui.activeDocument().activeView().saveImage(
             self._file_objects["ssfn"], 320, 200, 'White')
@@ -357,7 +359,7 @@ class OpSetupSheet:
             self._file_objects[
                 "outext"] = self._form.cbOutputFormat.currentText()
             self._file_objects["outfn"] += "/" + "SetupSheet_" + \
-                self._data['ngclabel'] + self._file_objects["outext"]
+                                           self._data['ngclabel'] + self._file_objects["outext"]
             self._data['machine'] = self._form.leMachine.text()
             self._data['material'] = self._form.leMaterial.text()
             self._data['notes'] = self._form.pteNotes.toPlainText()
@@ -396,6 +398,7 @@ class OpSetupSheet:
             return
 
         WebGui.openBrowser(self._file_objects["outfn"])
+
         return
 
     def get_label(self):

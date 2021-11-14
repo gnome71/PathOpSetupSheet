@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Setup Sheet</title>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 10px;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        img {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Setup Sheet</h1>
+    <h3>Program: TESTPART</h3>
+    <h3>Job description: </h3>
+    <table id="header">
+        <tr>
+            <th>Part Name:</th>
+            <td>TestPart</td>
+        </tr>
+        <tr>
+            <th rowspan="2">CAD File:</th>
+            <td>TestPart.FCStd</td>
+        </tr>
+        <tr>
+            <td>/home/devel/.FreeCAD/Macro/PathOpSetupSheet/</td>
+        </tr>
+        <tr>
+            <th rowspan="2">CNC Program:</th>
+            <td>TESTPART.ngc</td>
+        </tr>
+        <tr>
+            <td>/home/devel/.FreeCAD/Macro/PathOpSetupSheet/testpart/</td>
+        </tr>
+        <tr>
+            <th>Processed:</th>
+            <td>2021-11-14, 08:29:40</td>
+        </tr>
+        <tr>
+            <th>Processor:</th>
+            <td>linuxcnc</td>
+        </tr>
+        <tr>
+            <th>Machine:</th>
+            <td>MyCNC</td>
+        </tr>
+        <tr>
+            <th>WCS:</th>
+            <td>G54,</td>
+        </tr>
+        <tr>
+            <th>Low Z:</th>
+            <td>-3.000</td>
+        </tr>
+        <tr>
+            <th>Material:</th>
+            <td>Aluminium</td>
+        </tr>
+        <tr>
+            <th>Notes:</th>
+            <td>Z origin at top of stock.</td>
+        </tr>
+    </table>
+    <h2>Origin</h2>
+    <img src="/home/devel/.FreeCAD/Macro/PathOpSetupSheet/testpart/SetupSheet_TESTPART.png" alt="Origin" style="width:320px; height:200px; border:1px solid black;">
+    <dl>
+        <dt style="font-weight: bold;">Stock size:</dt>
+        <dd>DX: 52.000</dd>
+        <dd>DY: 52.000</dd>
+        <dd>DZ: 3.000</dd>
+    </dl>
+    <h2>Total</h2>
+    <table id="total">
+        <tr>
+            <th>Number of operations:</th>
+            <td>6</td>
+        </tr>
+        <tr>
+            <th>Number of tools:</th>
+            <td>1</td>
+        </tr>
+        <th>T3:</th>
+<td>ToolBit</td></tr>
+
+        <tr>
+            <th>Estimated cycle time:</th>
+            <td>00:02:59</td>
+        </tr>
+        <tr>
+            <th>XMin : XMax:</th>
+            <td>-0.500 : 55.242</td>
+        </tr>
+        <tr>
+            <th>YMin : YMax:</th>
+            <td>-0.500 : 55.242</td>
+        </tr>
+        <tr>
+            <th>ZMin : ZMax:</th>
+            <td>-3.000 : 5.000</td>
+        </tr>
+    </table>
+    <h2>Operations</h2>
+    <table id="operations">
+        <tr>
+            <th>Op.</th>
+            <th>Tool</th>
+            <th>ETA</th>
+            <th>HorizFeed</th>
+            <th>VertFeed</th>
+            <th>Spindle n</th>
+            <th>Spindle dir</th>
+        </tr>
+        </tr><td>Profile</td>
+<td>3mm alu flat sorotec001</td>
+<td>00:00:49</td>
+<td>400,00 mm/min</td>
+<td>90,00 mm/min</td>
+<td>14000</td>
+<td>Forward</td>
+</tr><td>Helix</td>
+<td>3mm alu flat sorotec001</td>
+<td>00:00:47</td>
+<td>400,00 mm/min</td>
+<td>90,00 mm/min</td>
+<td>14000</td>
+<td>Forward</td>
+</tr><td>Deburr</td>
+<td>3mm alu flat sorotec001</td>
+<td>00:01:23</td>
+<td>400,00 mm/min</td>
+<td>90,00 mm/min</td>
+<td>14000</td>
+<td>Forward</td>
+</tr>
+
+    </table>
+</body>
+
+</html>
